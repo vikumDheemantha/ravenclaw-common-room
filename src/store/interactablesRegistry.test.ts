@@ -13,6 +13,7 @@ describe('interactablesRegistry', () => {
   function makeMesh(x: number, y: number, z: number): THREE.Object3D {
     const mesh = new THREE.Object3D()
     mesh.position.set(x, y, z)
+    mesh.updateMatrixWorld()
     return mesh
   }
 

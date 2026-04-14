@@ -43,8 +43,7 @@ export function findNearestInteractable(
   const toObj = new THREE.Vector3()
 
   for (const { descriptor, object } of registry.values()) {
-    // Use position directly for objects that haven't had updateMatrixWorld called
-    toObj.copy(object.position)
+    object.getWorldPosition(toObj)
     toObj.sub(camPos)
     const dist = toObj.length()
     if (dist === 0 || dist > maxDistance) continue
