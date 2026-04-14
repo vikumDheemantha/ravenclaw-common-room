@@ -115,7 +115,7 @@ export function CommonRoomScene({ onFocusChange }: Props) {
            ════════════════════════════════════════════════════════════════ */}
 
       {/* Ambient — lifts the shadow floor so nothing is pure black */}
-      <ambientLight intensity={0.75} />
+      <ambientLight intensity={1.6} />
 
       {/* ── Ground floor sconces (diagonal corners, r ≈ 18.4, y = 3.5) ─── */}
       <pointLight position={[ 13, 3.5, -13]} intensity={24} color="#ffc060" distance={30} decay={1.5} />
@@ -138,7 +138,7 @@ export function CommonRoomScene({ onFocusChange }: Props) {
 
       {/* ── Shell ────────────────────────────────────────────────────────── */}
       <Floor radius={RADIUS} />
-      <CircularWalls radius={RADIUS} height={HEIGHT} mezzanineY={MEZZANINE_Y} />
+      <CircularWalls radius={RADIUS} height={HEIGHT} mezzanineY={MEZZANINE_Y} windowCount={10} />
       <Dome radius={RADIUS} height={HEIGHT} />
 
       {/* ── Ground-floor furnishings ──────────────────────────────────────── */}
