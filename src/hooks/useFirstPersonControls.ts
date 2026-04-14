@@ -10,6 +10,12 @@ interface Options {
   playerRadius?: number
   circularBoundary?: number
   enabled?: boolean
+  /**
+   * When provided, camera.y is set to `floorYRef.current + eyeHeight` each
+   * frame instead of the fixed `eyeHeight`.  Lets the staircase elevation hook
+   * drive the player's vertical position without coupling the two hooks.
+   */
+  floorYRef?: React.MutableRefObject<number>
 }
 
 interface KeyState {
@@ -25,6 +31,7 @@ export function useFirstPersonControls({
   playerRadius = 0.4,
   circularBoundary,
   enabled = true,
+  floorYRef,
 }: Options = {}) {
   const { camera } = useThree()
   const keys = useRef<KeyState>({
@@ -35,8 +42,8 @@ export function useFirstPersonControls({
   })
 
   useEffect(() => {
-    camera.position.y = eyeHeight
-  }, [camera, eyeHeight])
+    camera.position.y = (floorYRef?.current ?? 0) + eyeHeight
+  }, [camera, eyeHeight, floorYRef])
 
   useEffect(() => {
     if (!enabled) return
@@ -97,6 +104,6 @@ export function useFirstPersonControls({
 
     camera.position.x = resolved.x
     camera.position.z = resolved.z
-    camera.position.y = eyeHeight
+    camera.position.y = (floorYRef?.current ?? 0) + eyeHeight
   })
 }
