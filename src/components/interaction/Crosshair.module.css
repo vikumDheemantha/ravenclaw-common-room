@@ -1,0 +1,19 @@
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.focused {
+  background: #CD7F32;
+  transform: scale(1.4);
+}
