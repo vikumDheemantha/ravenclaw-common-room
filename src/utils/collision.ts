@@ -37,9 +37,19 @@ function resolveAxis(
     const pz = axis === 'z' ? pos : other
     if (collidesAABB(px, pz, r, b)) {
       if (axis === 'x') {
-        pos = desired > start ? b.minX - r : b.maxX + r
+        // Use start to determine which side we're approaching from.
+        // Math.min/max accumulates the most restrictive constraint across multiple boxes.
+        if (start <= b.minX) {
+          pos = Math.min(pos, b.minX - r) // approaching from left
+        } else {
+          pos = Math.max(pos, b.maxX + r) // approaching from right
+        }
       } else {
-        pos = desired > start ? b.minZ - r : b.maxZ + r
+        if (start <= b.minZ) {
+          pos = Math.min(pos, b.minZ - r)
+        } else {
+          pos = Math.max(pos, b.maxZ + r)
+        }
       }
     }
   }

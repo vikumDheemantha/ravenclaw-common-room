@@ -48,4 +48,20 @@ describe('resolveMovement', () => {
     )
     expect(Math.hypot(result.x, result.z)).toBeLessThanOrEqual(20 - playerRadius + 1e-6)
   })
+
+  it('handles two adjacent walls correctly (most restrictive wins)', () => {
+    // wall1 and wall2 are close enough that the desired position x=4.5 overlaps both
+    const wall1: AABB = { minX: 3, maxX: 4.4, minZ: -5, maxZ: 5 }
+    const wall2: AABB = { minX: 4.5, maxX: 5.5, minZ: -5, maxZ: 5 }
+    // Player at x=1 moves to x=4.5 — circle overlaps both walls (gap=0.1 < radius=0.4)
+    // Most restrictive constraint from the left: wall1.minX - r = 3 - 0.4 = 2.6
+    const result = resolveMovement(
+      { x: 1, z: 0 },
+      { x: 4.5, z: 0 },
+      0.4,
+      [wall1, wall2],
+    )
+    // Should stop at the near face of wall1 (x=3) minus radius: 3 - 0.4 = 2.6
+    expect(result.x).toBeCloseTo(2.6, 5)
+  })
 })
