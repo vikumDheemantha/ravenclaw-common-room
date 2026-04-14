@@ -76,7 +76,7 @@ export function useFirstPersonControls({
     camera.getWorldDirection(forward.current)
     forward.current.y = 0
     forward.current.normalize()
-    right.current.set(forward.current.z, 0, -forward.current.x) // cross with up
+    right.current.set(-forward.current.z, 0, forward.current.x) // cross with up
 
     const move = new THREE.Vector3()
     if (k.forward) move.add(forward.current)

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useThree } from '@react-three/fiber'
 import { PointerLockControls } from '@react-three/drei'
 import { InteractableObject } from '../components/interaction/InteractableObject'
 import { useFirstPersonControls } from '../hooks/useFirstPersonControls'
@@ -15,6 +16,13 @@ interface Props {
 }
 
 export function EntryScene({ onFocusChange, onEnter }: Props) {
+  const { camera } = useThree()
+
+  // Always reset spawn position when entering the corridor scene
+  useEffect(() => {
+    camera.position.set(0, 1.7, -5)
+  }, [camera])
+
   useFirstPersonControls()
   const focused = useInteraction()
   const tooltip = useGameStore((s) => s.tooltip)
@@ -42,8 +50,8 @@ export function EntryScene({ onFocusChange, onEnter }: Props) {
 
   return (
     <>
-      <ambientLight intensity={0.2} />
-      <pointLight position={[0, 3, -4]} intensity={0.8} color="#e0b060" distance={10} />
+      <ambientLight intensity={1.5} />
+      <pointLight position={[0, 3, -4]} intensity={15} color="#e0b060" distance={12} />
 
       {/* Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -4]}>
