@@ -101,15 +101,40 @@ export function CommonRoomScene({ onFocusChange }: Props) {
 
   return (
     <>
-      {/* ── Lighting ─────────────────────────────────────────────────────── */}
-      <ambientLight intensity={1.1} />
-      {/* Warm candlelight — ground floor hearth area */}
-      <pointLight position={[2, 3, 2]}    intensity={22}  color="#ffd8a0" distance={18} decay={1.6} />
-      {/* Cool moonlight — floods down from the dome */}
-      <pointLight position={[0, 14, 0]}   intensity={6}   color="#7a95d6" distance={45} decay={1}   />
-      {/* Upper-floor sconce lights */}
-      <pointLight position={[-5, 11, -5]} intensity={18}  color="#ffd0a0" distance={20} decay={1.5} />
-      <pointLight position={[6,  11,  8]} intensity={14}  color="#ffd8a0" distance={18} decay={1.5} />
+      {/* ══ LIGHTING ════════════════════════════════════════════════════════
+           Two-storey strategy
+           ─────────────────────────────────────────────────────────────────
+           Bookshelves sit at N/E/S/W (r ≈ 19.4).  Sconces are placed at the
+           four diagonal corners (r ≈ 18.4), so every shelf has two warm
+           sources within ~15 units, one on each flank.
+
+           Ground floor:  sconces at y = 3.5  (eye-level halo)
+           Upper floor:   lanterns at y = 10.5 (2.5 u above mezzanine)
+           Both floors share a centre-fill light for the walkable core.
+           Dome:          single cool moonlight high in the night sky.
+           ════════════════════════════════════════════════════════════════ */}
+
+      {/* Ambient — lifts the shadow floor so nothing is pure black */}
+      <ambientLight intensity={0.75} />
+
+      {/* ── Ground floor sconces (diagonal corners, r ≈ 18.4, y = 3.5) ─── */}
+      <pointLight position={[ 13, 3.5, -13]} intensity={24} color="#ffc060" distance={30} decay={1.5} />
+      <pointLight position={[ 13, 3.5,  13]} intensity={24} color="#ffc060" distance={30} decay={1.5} />
+      <pointLight position={[-13, 3.5,  13]} intensity={24} color="#ffc060" distance={30} decay={1.5} />
+      <pointLight position={[-13, 3.5, -13]} intensity={24} color="#ffc060" distance={30} decay={1.5} />
+      {/* Ground floor centre fill — hearth warmth */}
+      <pointLight position={[0, 2.5, 0]} intensity={20} color="#ff9830" distance={22} decay={2} />
+
+      {/* ── Upper floor lanterns (same diagonal corners, y = 10.5) ──────── */}
+      <pointLight position={[ 13, 10.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[ 13, 10.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[-13, 10.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[-13, 10.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      {/* Upper floor centre fill — lights the inner mezzanine ring */}
+      <pointLight position={[0, 9.5, 0]} intensity={16} color="#ffd8a0" distance={26} decay={2} />
+
+      {/* ── Dome — cool silver-blue moonlight from the night sky ─────────── */}
+      <pointLight position={[0, 17, 0]} intensity={10} color="#7080c0" distance={55} decay={1} />
 
       {/* ── Shell ────────────────────────────────────────────────────────── */}
       <Floor radius={RADIUS} />
