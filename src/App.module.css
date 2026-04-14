@@ -1,0 +1,34 @@
+.root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.startOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #f4e9cf;
+  font-family: Georgia, serif;
+  z-index: 20;
+  cursor: pointer;
+}
+
+.startOverlay h1 {
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: #CD7F32;
+}
+
+.startOverlay p {
+  font-size: 15px;
+  max-width: 480px;
+  text-align: center;
+  line-height: 1.5;
+}

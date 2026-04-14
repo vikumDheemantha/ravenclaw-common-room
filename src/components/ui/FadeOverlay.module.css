@@ -1,0 +1,13 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: black;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  z-index: 10;
+}
+
+.visible {
+  opacity: 1;
+}
