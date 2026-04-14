@@ -6,7 +6,6 @@ import { useInteraction } from '../hooks/useInteraction'
 import { useGameStore } from '../store/useGameStore'
 import {
   registerCollider,
-  unregisterCollider,
   clearAllColliders,
 } from '../store/collidersRegistry'
 
