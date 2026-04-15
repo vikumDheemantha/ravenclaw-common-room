@@ -77,26 +77,50 @@ export function CommonRoomScene({ onFocusChange }: Props) {
     return () => unregisterCollider('entrance-door-block')
   }, [])
 
-  // Ground-floor bookshelves — N/E/S/W at the inner wall surface.
+  // Ground-floor bookshelves.
+  // Windows sit at a = (i/10)*2π — shelves are placed at window midpoints to
+  // avoid covering the openings.  The north slot is omitted because it sits
+  // directly behind Rovina's statue and overlaps the entrance door gap.
+  //   shelf-s  : a = 90°  (between windows i=2 @ 72° and i=3 @ 108°)
+  //   shelf-se : a = 54°  (between windows i=1 @ 36° and i=2 @ 72°)
+  //   shelf-sw : a = 126° (between windows i=3 @ 108° and i=4 @ 144°)
   const shelfDist = RADIUS - 0.6
+  const A_SE = 3 * Math.PI / 10   // 54°
+  const A_SW = 7 * Math.PI / 10   // 126°
   const shelfPositions: Array<{
     id: string
     position: [number, number, number]
     rotationY: number
+    variant: 'main' | 'upper'
   }> = [
-    { id: 'shelf-n', position: [0,          0, -shelfDist], rotationY: 0          },
-    { id: 'shelf-e', position: [shelfDist,  0,  0         ], rotationY: -Math.PI / 2 },
-    { id: 'shelf-s', position: [0,          0,  shelfDist ], rotationY: Math.PI   },
-    { id: 'shelf-w', position: [-shelfDist, 0,  0         ], rotationY: Math.PI / 2 },
+    {
+      id: 'shelf-s',
+      position: [0, 0, shelfDist],
+      rotationY: Math.PI,
+      variant: 'main',
+    },
+    {
+      id: 'shelf-se',
+      position: [Math.cos(A_SE) * shelfDist, 0, Math.sin(A_SE) * shelfDist],
+      rotationY: Math.atan2(-Math.cos(A_SE), -Math.sin(A_SE)),
+      variant: 'main',
+    },
+    {
+      id: 'shelf-sw',
+      position: [Math.cos(A_SW) * shelfDist, 0, Math.sin(A_SW) * shelfDist],
+      rotationY: Math.atan2(-Math.cos(A_SW), -Math.sin(A_SW)),
+      variant: 'upper',   // variety on the ground floor
+    },
   ]
 
   // Upper-floor bookshelves — same XZ wall positions, seated on the mezzanine.
-  // Because the XZ bounds are identical to the ground-floor shelves, no new
-  // collision AABBs are introduced.
-  const upperShelfPositions = shelfPositions.map(s => ({
+  // Two 'upper' variants + one 'main' for visual variety on the upper tier.
+  const upperVariants: Array<'main' | 'upper'> = ['upper', 'upper', 'main']
+  const upperShelfPositions = shelfPositions.map((s, i) => ({
     ...s,
     id: `${s.id}-upper`,
     position: [s.position[0], MEZZANINE_Y, s.position[2]] as [number, number, number],
+    variant: upperVariants[i],
   }))
 
   return (
