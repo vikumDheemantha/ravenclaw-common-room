@@ -11,11 +11,27 @@ export function useInteraction(enabled = true) {
   const [focused, setFocused] = useState<InteractableDescriptor | null>(null)
   const focusedRef = useRef<InteractableDescriptor | null>(null)
   const setTooltip = useGameStore((s) => s.setTooltip)
+  const setInteractionOpen = useGameStore((s) => s.setInteractionOpen)
 
   // Keep ref in sync with state so the stable event handler can read current value
   useEffect(() => {
     focusedRef.current = focused
   }, [focused])
+
+  // Proximity drives the tooltip automatically (Layer 1 - ProximityHint)
+  useEffect(() => {
+    if (!enabled) return
+    if (focused) {
+      setTooltip({
+        title: focused.title,
+        description: focused.description,
+        category: focused.category,
+      })
+    } else {
+      setTooltip(null)
+      setInteractionOpen(false)
+    }
+  }, [focused, enabled, setTooltip, setInteractionOpen])
 
   useFrame(() => {
     if (!enabled) {
@@ -28,27 +44,33 @@ export function useInteraction(enabled = true) {
 
   useEffect(() => {
     if (!enabled) return
-    // Stable listener — reads current focused via ref, not closure
-    const trigger = () => {
-      const current = focusedRef.current
-      if (current) {
-        setTooltip({ title: current.title, description: current.description })
-      } else {
-        setTooltip(null)
+    // Stable listener — reads current focused via ref + store, not closure
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'KeyE') {
+        if (focusedRef.current) {
+          const { interactionOpen } = useGameStore.getState()
+          setInteractionOpen(!interactionOpen)
+        } else {
+          setInteractionOpen(false)
+        }
+      }
+      if (e.code === 'Escape') {
+        setInteractionOpen(false)
       }
     }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'KeyE') trigger()
-      if (e.code === 'Escape') setTooltip(null)
+    const onClick = () => {
+      if (focusedRef.current) {
+        const { interactionOpen } = useGameStore.getState()
+        setInteractionOpen(!interactionOpen)
+      }
     }
-    const onClick = () => trigger()
     window.addEventListener('keydown', onKey)
     window.addEventListener('mousedown', onClick)
     return () => {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('mousedown', onClick)
     }
-  }, [enabled, setTooltip])  // no `focused` in deps — listener is stable
+  }, [enabled, setInteractionOpen])
 
   return focused
 }

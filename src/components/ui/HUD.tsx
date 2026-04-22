@@ -1,5 +1,6 @@
 import { Crosshair } from '../interaction/Crosshair'
-import { TooltipCard } from './TooltipCard'
+import { ProximityHint } from './ProximityHint'
+import { InteractionPopup } from './InteractionPopup'
 import { useGameStore } from '../../store/useGameStore'
 
 interface Props {
@@ -11,7 +12,8 @@ export function HUD({ crosshairFocused }: Props) {
   return (
     <>
       <Crosshair focused={crosshairFocused} />
-      <TooltipCard tooltip={tooltip} />
+      <ProximityHint tooltip={tooltip} />
+      <InteractionPopup />
     </>
   )
 }

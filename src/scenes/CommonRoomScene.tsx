@@ -8,6 +8,7 @@ import { BookshelfWall } from '../components/room/BookshelfWall'
 import { Statue } from '../components/room/Statue'
 import { WritingDesk } from '../components/room/WritingDesk'
 import { Armchair } from '../components/room/Armchair'
+import { RoundTable } from '../components/room/RoundTable'
 import { GlobeStand } from '../components/room/GlobeStand'
 import {
   CircularStaircase,
@@ -32,6 +33,43 @@ interface Props {
 const RADIUS = 20
 const HEIGHT = 20   // two generous stories: ground (0→8) + upper (8→20) + dome
 
+// ─── Table-and-chair group layout ────────────────────────────────────────────
+// Each group: one round table with chairs evenly spaced around it.
+// Angles use the standard (x=cosA, z=sinA) convention; chairs face inward via
+// rotationY = atan2(-cosA, -sinA).
+interface TableGroup {
+  tableId:   string
+  tablePos:  [number, number, number]
+  chairCount: number
+  chairRadius: number
+  startAngle: number
+}
+
+const TABLE_GROUPS: TableGroup[] = [
+  // Centre-south — main gathering spot (4 chairs, slightly offset for organic feel)
+  { tableId: 'centre', tablePos: [0,  0, 7], chairCount: 4, chairRadius: 1.5, startAngle: Math.PI / 4 },
+  // East alcove — quieter reading pair-plus (3 chairs)
+  { tableId: 'east',   tablePos: [9,  0, 1], chairCount: 3, chairRadius: 1.4, startAngle: Math.PI },
+  // West alcove — mirror of east (3 chairs)
+  { tableId: 'west',   tablePos: [-9, 0, 1], chairCount: 3, chairRadius: 1.4, startAngle: 0 },
+]
+
+function buildChairs(group: TableGroup) {
+  const { tableId, tablePos, chairCount, chairRadius, startAngle } = group
+  return Array.from({ length: chairCount }, (_, i) => {
+    const a = startAngle + (i / chairCount) * Math.PI * 2
+    return {
+      id:        `chair-${tableId}-${i}`,
+      position:  [
+        tablePos[0] + Math.cos(a) * chairRadius,
+        0,
+        tablePos[2] + Math.sin(a) * chairRadius,
+      ] as [number, number, number],
+      rotationY: Math.atan2(-Math.cos(a), -Math.sin(a)),
+    }
+  })
+}
+
 export function CommonRoomScene({ onFocusChange }: Props) {
   const { camera } = useThree()
 
@@ -54,21 +92,27 @@ export function CommonRoomScene({ onFocusChange }: Props) {
     floorYRef,
   })
 
-  const focused  = useInteraction()
-  const setScene = useGameStore((s) => s.setScene)
+  const focused             = useInteraction()
+  const setScene            = useGameStore((s) => s.setScene)
+  const setInteractionOpen  = useGameStore((s) => s.setInteractionOpen)
 
   useEffect(() => {
     onFocusChange(!!focused)
   }, [focused, onFocusChange])
 
-  // Return to the entry corridor when the player interacts with the entrance door.
-  const tooltip = useGameStore((s) => s.tooltip)
+  // Return to the entry corridor only when the player explicitly interacts (presses E)
+  // near the entrance door — not merely by walking past it.
+  const tooltip             = useGameStore((s) => s.tooltip)
+  const interactionOpen     = useGameStore((s) => s.interactionOpen)
   useEffect(() => {
-    if (tooltip?.title === 'Tower Entrance') {
-      const timer = setTimeout(() => setScene('entry'), 1200)
+    if (interactionOpen && tooltip?.title === 'Tower Entrance') {
+      const timer = setTimeout(() => {
+        setScene('entry')
+        setInteractionOpen(false)
+      }, 1200)
       return () => clearTimeout(timer)
     }
-  }, [tooltip, setScene])
+  }, [interactionOpen, tooltip, setScene, setInteractionOpen])
 
   // Fixed colliders: entrance-door gap blocker only.
   // The staircase has no central pole so no pole collider is needed.
@@ -77,50 +121,48 @@ export function CommonRoomScene({ onFocusChange }: Props) {
     return () => unregisterCollider('entrance-door-block')
   }, [])
 
-  // Ground-floor bookshelves.
-  // Windows sit at a = (i/10)*2π — shelves are placed at window midpoints to
-  // avoid covering the openings.  The north slot is omitted because it sits
-  // directly behind Rovina's statue and overlaps the entrance door gap.
-  //   shelf-s  : a = 90°  (between windows i=2 @ 72° and i=3 @ 108°)
-  //   shelf-se : a = 54°  (between windows i=1 @ 36° and i=2 @ 72°)
-  //   shelf-sw : a = 126° (between windows i=3 @ 108° and i=4 @ 144°)
+  // Bookshelves sit at midpoints between windows (windows at (i/10)·2π).
+  // The 270° north slot is skipped — entrance door + statue occupy that wall.
   const shelfDist = RADIUS - 0.6
-  const A_SE = 3 * Math.PI / 10   // 54°
-  const A_SW = 7 * Math.PI / 10   // 126°
+  const A_SE  = 3  * Math.PI / 10   // 54°  — between i=1 (36°) and i=2 (72°)
+  const A_SW  = 7  * Math.PI / 10   // 126° — between i=3 (108°) and i=4 (144°)
+  const A_ESE = 1  * Math.PI / 10   // 18°  — between i=0 (0°) and i=1 (36°)
+  const A_WSW = 9  * Math.PI / 10   // 162° — between i=4 (144°) and i=5 (180°)
+  const A_WNW = 11 * Math.PI / 10   // 198° — between i=5 (180°) and i=6 (216°)
+  const A_NW  = 13 * Math.PI / 10   // 234° — between i=6 (216°) and i=7 (252°)
+  const A_NE  = 17 * Math.PI / 10   // 306° — between i=8 (288°) and i=9 (324°)
+  const A_ENE = 19 * Math.PI / 10   // 342° — between i=9 (324°) and i=0 (0°)
+
+  const wallPos = (a: number): [number, number, number] =>
+    [Math.cos(a) * shelfDist, 0, Math.sin(a) * shelfDist]
+  const wallRot = (a: number) => Math.atan2(-Math.cos(a), -Math.sin(a))
+
   const shelfPositions: Array<{
     id: string
     position: [number, number, number]
     rotationY: number
     variant: 'main' | 'upper'
   }> = [
-    {
-      id: 'shelf-s',
-      position: [0, 0, shelfDist],
-      rotationY: Math.PI,
-      variant: 'main',
-    },
-    {
-      id: 'shelf-se',
-      position: [Math.cos(A_SE) * shelfDist, 0, Math.sin(A_SE) * shelfDist],
-      rotationY: Math.atan2(-Math.cos(A_SE), -Math.sin(A_SE)),
-      variant: 'main',
-    },
-    {
-      id: 'shelf-sw',
-      position: [Math.cos(A_SW) * shelfDist, 0, Math.sin(A_SW) * shelfDist],
-      rotationY: Math.atan2(-Math.cos(A_SW), -Math.sin(A_SW)),
-      variant: 'upper',   // variety on the ground floor
-    },
+    // ── South cluster (original three) ──────────────────────────────────────
+    { id: 'shelf-s',   position: [0, 0, shelfDist], rotationY: Math.PI,       variant: 'main'  },
+    { id: 'shelf-se',  position: wallPos(A_SE),      rotationY: wallRot(A_SE), variant: 'main'  },
+    { id: 'shelf-sw',  position: wallPos(A_SW),      rotationY: wallRot(A_SW), variant: 'upper' },
+    // ── East & west flanks ──────────────────────────────────────────────────
+    { id: 'shelf-ese', position: wallPos(A_ESE),     rotationY: wallRot(A_ESE), variant: 'main'  },
+    { id: 'shelf-wsw', position: wallPos(A_WSW),     rotationY: wallRot(A_WSW), variant: 'main'  },
+    { id: 'shelf-wnw', position: wallPos(A_WNW),     rotationY: wallRot(A_WNW), variant: 'upper' },
+    // ── North flanks (270° slot skipped — entrance door) ────────────────────
+    { id: 'shelf-nw',  position: wallPos(A_NW),      rotationY: wallRot(A_NW),  variant: 'main'  },
+    { id: 'shelf-ne',  position: wallPos(A_NE),      rotationY: wallRot(A_NE),  variant: 'main'  },
+    { id: 'shelf-ene', position: wallPos(A_ENE),     rotationY: wallRot(A_ENE), variant: 'upper' },
   ]
 
-  // Upper-floor bookshelves — same XZ wall positions, seated on the mezzanine.
-  // Two 'upper' variants + one 'main' for visual variety on the upper tier.
-  const upperVariants: Array<'main' | 'upper'> = ['upper', 'upper', 'main']
-  const upperShelfPositions = shelfPositions.map((s, i) => ({
+  // Upper-floor: same XZ positions at mezzanine height, variants swapped for variety.
+  const upperShelfPositions = shelfPositions.map((s) => ({
     ...s,
     id: `${s.id}-upper`,
     position: [s.position[0], MEZZANINE_Y, s.position[2]] as [number, number, number],
-    variant: upperVariants[i],
+    variant: (s.variant === 'main' ? 'upper' : 'main') as 'main' | 'upper',
   }))
 
   return (
@@ -171,12 +213,18 @@ export function CommonRoomScene({ onFocusChange }: Props) {
       ))}
 
       <Statue position={[0, 0, -RADIUS * 0.55]} />
-      <WritingDesk id="desk-1" position={[3,  0, -4]} rotationY={-Math.PI / 6} />
-      <Armchair   id="chair-1" position={[-2, 0,  2]} rotationY={ Math.PI / 4} />
-      <Armchair   id="chair-2" position={[ 2, 0,  2]} rotationY={-Math.PI / 4} />
-      <Armchair   id="chair-3" position={[-3, 0, -2]} rotationY={ Math.PI / 2.5} />
-      <Armchair   id="chair-4" position={[ 3, 0,  0]} rotationY={-Math.PI / 2} />
-      <GlobeStand id="globe-1" position={[4.5, 0, -4]} />
+      <WritingDesk id="desk-1" position={[3, 0, -4]} rotationY={-Math.PI / 6} />
+      <GlobeStand  id="globe-1" position={[4.5, 0, -4]} />
+
+      {/* ── Table + chair groups ──────────────────────────────────────────── */}
+      {TABLE_GROUPS.map(group => (
+        <group key={group.tableId}>
+          <RoundTable id={group.tableId} position={group.tablePos} />
+          {buildChairs(group).map(chair => (
+            <Armchair key={chair.id} {...chair} />
+          ))}
+        </group>
+      ))}
 
       {/* ── Grand wall staircase + mezzanine ─────────────────────────────── */}
       <CircularStaircase />

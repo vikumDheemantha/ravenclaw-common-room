@@ -17,7 +17,7 @@ interface Props {
 
 /** Target width in world units for each model — tune independently. */
 const TARGET_WIDTH_MAIN  = 6.0   // BookShelf_main — larger ground-floor unit
-const TARGET_WIDTH_UPPER = 3.5   // BookShelf_upper_floor
+const TARGET_WIDTH_UPPER = 3   // BookShelf_upper_floor
 
 interface ShelfTransform {
   clone:      THREE.Object3D
@@ -78,6 +78,11 @@ function buildTransform(fbx: THREE.Group): ShelfTransform {
         mat.opacity     = 1.0
         mat.depthWrite  = true
         mat.side        = THREE.FrontSide
+        // Remove metallic sheen — force non-metallic
+        if (mat instanceof THREE.MeshStandardMaterial) {
+          mat.metalness = 0.0
+          mat.roughness = 0.8
+        }
         return mat
       }
       mesh.material = Array.isArray(mesh.material)

@@ -3,7 +3,7 @@ import { useGameStore } from './useGameStore'
 
 describe('useGameStore', () => {
   beforeEach(() => {
-    useGameStore.setState({ scene: 'entry', tooltip: null })
+    useGameStore.setState({ scene: 'entry', tooltip: null, interactionOpen: false })
   })
 
   it('starts in the entry scene with no tooltip', () => {
@@ -25,5 +25,22 @@ describe('useGameStore', () => {
     })
     useGameStore.getState().setTooltip(null)
     expect(useGameStore.getState().tooltip).toBeNull()
+  })
+
+  it('starts with interactionOpen false', () => {
+    const state = useGameStore.getState()
+    expect(state.interactionOpen).toBe(false)
+  })
+
+  it('can open and close the interaction popup', () => {
+    useGameStore.getState().setInteractionOpen(true)
+    expect(useGameStore.getState().interactionOpen).toBe(true)
+    useGameStore.getState().setInteractionOpen(false)
+    expect(useGameStore.getState().interactionOpen).toBe(false)
+  })
+
+  it('resets interactionOpen in beforeEach', () => {
+    // Verifies beforeEach covers the new field
+    expect(useGameStore.getState().interactionOpen).toBe(false)
   })
 })

@@ -1,0 +1,135 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.popup {
+  width: 340px;
+  background: rgba(41, 42, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 6px;
+  border: 1px solid rgba(69, 70, 82, 0.25);
+  box-shadow: 0 20px 40px rgba(0, 7, 103, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  position: relative;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.popupVisible {
+  opacity: 1;
+}
+
+.watermark {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  font-size: 70px;
+  line-height: 1;
+  opacity: 0.05;
+  user-select: none;
+  pointer-events: none;
+}
+
+.header {
+  padding: 16px 20px 12px;
+}
+
+.category {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #89d0ed;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.title {
+  font-family: 'Noto Serif', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e3e2e2;
+  line-height: 1.2;
+}
+
+.divider {
+  height: 1px;
+  margin: 0 20px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(137, 208, 237, 0.15),
+    transparent
+  );
+}
+
+.body {
+  padding: 14px 20px 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.description {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.6;
+  color: #c6c5d4;
+  margin: 0 0 16px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dismiss {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #454652;
+}
+
+.keyBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid #454652;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: #c6c5d4;
+  flex-shrink: 0;
+}
+
+.inspectBtn {
+  background: linear-gradient(135deg, #bdc2ff 0%, #1a237e 100%);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1b247f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
