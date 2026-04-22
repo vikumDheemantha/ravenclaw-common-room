@@ -31,7 +31,7 @@ interface Props {
 }
 
 const RADIUS = 20
-const HEIGHT = 20   // two generous stories: ground (0→8) + upper (8→20) + dome
+const HEIGHT = 16   // two stories: grand ground floor (0→8) + gallery mezzanine (8→16) + dome
 
 // ─── Table-and-chair group layout ────────────────────────────────────────────
 // Each group: one round table with chairs evenly spaced around it.
@@ -191,16 +191,16 @@ export function CommonRoomScene({ onFocusChange }: Props) {
       {/* Ground floor centre fill — hearth warmth */}
       <pointLight position={[0, 2.5, 0]} intensity={20} color="#ff9830" distance={22} decay={2} />
 
-      {/* ── Upper floor lanterns (same diagonal corners, y = 10.5) ──────── */}
-      <pointLight position={[ 13, 10.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
-      <pointLight position={[ 13, 10.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
-      <pointLight position={[-13, 10.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
-      <pointLight position={[-13, 10.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      {/* ── Upper floor lanterns (same diagonal corners, y = 11.5 = mezzanine+3.5) ── */}
+      <pointLight position={[ 13, 11.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[ 13, 11.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[-13, 11.5,  13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
+      <pointLight position={[-13, 11.5, -13]} intensity={28} color="#ffd0a0" distance={32} decay={1.5} />
       {/* Upper floor centre fill — lights the inner mezzanine ring */}
-      <pointLight position={[0, 9.5, 0]} intensity={16} color="#ffd8a0" distance={26} decay={2} />
+      <pointLight position={[0, 10, 0]} intensity={16} color="#ffd8a0" distance={26} decay={2} />
 
       {/* ── Dome — cool silver-blue moonlight from the night sky ─────────── */}
-      <pointLight position={[0, 17, 0]} intensity={10} color="#7080c0" distance={55} decay={1} />
+      <pointLight position={[0, 18, 0]} intensity={10} color="#7080c0" distance={65} decay={1} />
 
       {/* ── Shell ────────────────────────────────────────────────────────── */}
       <Floor radius={RADIUS} />

@@ -27,8 +27,8 @@ function buildTiers(height: number, mezzanineY?: number): WindowTier[] {
   if (mezzanineY) {
     const gWinH = (mezzanineY - 0.6) * 0.95   // taller ground-floor windows
     const gBot  = 1.0
-    const uWinH = (height - mezzanineY - 1.4) * 0.93   // taller upper-floor windows
-    const uBot  = mezzanineY + 0.7
+    const uWinH = (height - mezzanineY - 1.2) * 0.97   // taller upper-floor windows
+    const uBot  = mezzanineY + 0.5
     return [
       { centerY: gBot + gWinH / 2, winHeight: gWinH, winWidth: 3.8, floorY: 0,          ceilingY: mezzanineY },
       { centerY: uBot + uWinH / 2, winHeight: uWinH, winWidth: 4.2, floorY: mezzanineY, ceilingY: height     },
@@ -40,21 +40,35 @@ function buildTiers(height: number, mezzanineY?: number): WindowTier[] {
 }
 
 /**
- * Gothic arch shape — sized to match the FBX frame's interior opening.
- * Slightly inset from the slot dimensions so it fits inside the stone border.
+ * Gothic arch shape (two-centre, R = w).
+ * Apex sits at h*0.10 + w*√3/2 above the shape centre — caller must ensure
+ * this stays ≤ winHeight/2, otherwise the tip overflows the FBX frame top.
+ * bottomY lets the caller extend the bottom below -h/2 to cover the full
+ * FBX interior height without affecting the arch-top constraint.
  */
-function makeGothicArch(w: number, h: number): THREE.Shape {
+function makeGothicArch(w: number, h: number, bottomY?: number): THREE.Shape {
   const half    = h / 2
+  const bottom  = bottomY ?? -half
   const springY = h * 0.60 - half
   const R       = w
   const shape   = new THREE.Shape()
-  shape.moveTo(-w / 2, -half)
+  shape.moveTo(-w / 2, bottom)
   shape.lineTo(-w / 2,  springY)
   shape.absarc( w / 2, springY, R, Math.PI,       (2 * Math.PI) / 3, true)
   shape.absarc(-w / 2, springY, R, Math.PI / 3,   0,                 true)
-  shape.lineTo( w / 2, -half)
+  shape.lineTo( w / 2, bottom)
   shape.closePath()
   return shape
+}
+
+/**
+ * Maximum safe uniform inset factor k such that the arch apex never exceeds
+ * winHeight/2.  Uses an 8% safety margin and caps at 0.88 for ground-floor
+ * windows (which have plenty of room).
+ */
+function safeArchInset(winW: number, winH: number): number {
+  const maxK = (winH / 2) / (winH * 0.10 + winW * (Math.sqrt(3) / 2))
+  return Math.min(maxK * 0.92, 0.88)
 }
 
 // ─── FBX window instance ───────────────────────────────────────────────────
@@ -125,9 +139,12 @@ export function CircularWalls({
 }: Props) {
   const tiers = useMemo(() => buildTiers(height, mezzanineY), [height, mezzanineY])
 
-  // Arch-shaped sky backing per tier — inset ~12% so it sits inside the stone border.
   const tierArchShapes = useMemo(() =>
-    tiers.map(t => makeGothicArch(t.winWidth * 0.88, t.winHeight * 0.88)),
+    tiers.map(t => {
+      const k       = safeArchInset(t.winWidth, t.winHeight)
+      const bottomY = -t.winHeight * 0.88 / 2   // reach 88% of FBX interior height below centre
+      return makeGothicArch(t.winWidth * k, t.winHeight * k, bottomY)
+    }),
   [tiers])
 
   const brickTex = useTexture(brickTexUrl)
@@ -200,16 +217,8 @@ export function CircularWalls({
 
           return (
             <group key={`${tierIdx}-${i}`} position={[wx, centerY, wz]} rotation={[0, rotY, 0]}>
-              {/*
-               * Emissive sky backing — plain rectangle at z = -0.05.
-               * Depth order (player → wall): FBX frame (z=-0.12) → sky rect (z=-0.05) → cylinder (z≈+0.04)
-               * The FBX stone parts are closer so they occlude this; the arch opening has no
-               * FBX geometry, so the sky rectangle shows through correctly.
-               * A plain rect is safer than an arch shape because it fully fills any opening
-               * regardless of FBX orientation, and is clipped by the cylinder wall from the sides.
-               */}
-              {/* Arch-shaped sky backing — inset so it fits inside the stone border.
-                  rotation=[0,π,0] flips the shape to face the player (local -Z). */}
+              {/* Arch-shaped sky backing — sized by safeArchInset so the apex
+                  never exceeds winHeight/2, preventing overflow above the FBX frame. */}
               <mesh position={[0, 0, -0.05]} rotation={[0, Math.PI, 0]}>
                 <shapeGeometry args={[archShape, 32]} />
                 <meshStandardMaterial
